@@ -1,0 +1,18 @@
+{
+  "天津市滨海新区志敏养殖场": {
+    "水温": "random_forest",
+    "pH": "random_forest",
+    "溶解氧": "random_forest",
+    "氨氮": "random_forest",
+    "盐度": "baseline",
+    "亚硝酸盐": "knn"
+  },
+  "天津市滨海新区李金山养殖场": {
+    "水温": "random_forest",
+    "pH": "random_forest",
+    "溶解氧": "baseline",
+    "氨氮": "random_forest",
+    "盐度": "baseline",
+    "亚硝酸盐": "knn"
+  }
+}

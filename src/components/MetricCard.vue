@@ -1,11 +1,11 @@
 <script setup>
 import { computed } from 'vue'
 import { useMonitorStore } from '../stores/monitor'
-import { ALERT_LEVELS, evaluateMetric } from '../utils/alert'
+import { ALERT_LEVELS, getAlertLevel } from '../utils/alert'
 
 const props = defineProps({ metric: { type: Object, required: true }, value: { type: Number, default: 0 }, previous: { type: Number, default: 0 }, time: { type: String, default: '' } })
 const store = useMonitorStore()
-const status = computed(() => evaluateMetric(props.metric.key, props.value, store.settings))
+const status = computed(() => getAlertLevel(props.metric.key, props.value, store.settings))
 const statusInfo = computed(() => ALERT_LEVELS[status.value])
 const direction = computed(() => props.value >= props.previous ? 'up' : 'down')
 const change = computed(() => Math.abs(props.value - props.previous).toFixed(props.metric.decimals))

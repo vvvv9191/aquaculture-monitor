@@ -1,0 +1,630 @@
+{
+  "天津市滨海新区志敏养殖场": {
+    "水温": {
+      "metric_key": "temperature",
+      "final_model": "random_forest",
+      "feature_columns": [
+        "temperature",
+        "ph",
+        "dissolvedOxygen",
+        "ammoniaNitrogen",
+        "salinity",
+        "nitrite",
+        "hour",
+        "month",
+        "temperature_lag1",
+        "temperature_lag2",
+        "temperature_lag3",
+        "temperature_lag5",
+        "ph_lag1",
+        "ph_lag2",
+        "ph_lag3",
+        "ph_lag5",
+        "DO_lag1",
+        "DO_lag2",
+        "DO_lag3",
+        "DO_lag5",
+        "ammoniaNitrogen_lag1",
+        "ammoniaNitrogen_lag2",
+        "ammoniaNitrogen_lag3",
+        "ammoniaNitrogen_lag5",
+        "salinity_lag1",
+        "salinity_lag2",
+        "salinity_lag3",
+        "salinity_lag5",
+        "nitrite_lag1",
+        "nitrite_lag2",
+        "nitrite_lag3",
+        "nitrite_lag5"
+      ],
+      "models": {
+        "knn": {
+          "model_file": "ml\\models\\farm01_temperature_knn.joblib",
+          "scaler_file": "ml\\models\\farm01_temperature_knn_scaler.joblib"
+        },
+        "random_forest": {
+          "model_file": "ml\\models\\farm01_temperature_random_forest.joblib",
+          "scaler_file": null
+        },
+        "baseline": {
+          "model_file": null,
+          "scaler_file": null
+        }
+      }
+    },
+    "pH": {
+      "metric_key": "ph",
+      "final_model": "random_forest",
+      "feature_columns": [
+        "temperature",
+        "ph",
+        "dissolvedOxygen",
+        "ammoniaNitrogen",
+        "salinity",
+        "nitrite",
+        "hour",
+        "month",
+        "temperature_lag1",
+        "temperature_lag2",
+        "temperature_lag3",
+        "temperature_lag5",
+        "ph_lag1",
+        "ph_lag2",
+        "ph_lag3",
+        "ph_lag5",
+        "DO_lag1",
+        "DO_lag2",
+        "DO_lag3",
+        "DO_lag5",
+        "ammoniaNitrogen_lag1",
+        "ammoniaNitrogen_lag2",
+        "ammoniaNitrogen_lag3",
+        "ammoniaNitrogen_lag5",
+        "salinity_lag1",
+        "salinity_lag2",
+        "salinity_lag3",
+        "salinity_lag5",
+        "nitrite_lag1",
+        "nitrite_lag2",
+        "nitrite_lag3",
+        "nitrite_lag5"
+      ],
+      "models": {
+        "knn": {
+          "model_file": "ml\\models\\farm01_ph_knn.joblib",
+          "scaler_file": "ml\\models\\farm01_ph_knn_scaler.joblib"
+        },
+        "random_forest": {
+          "model_file": "ml\\models\\farm01_ph_random_forest.joblib",
+          "scaler_file": null
+        },
+        "baseline": {
+          "model_file": null,
+          "scaler_file": null
+        }
+      }
+    },
+    "溶解氧": {
+      "metric_key": "dissolvedOxygen",
+      "final_model": "random_forest",
+      "feature_columns": [
+        "temperature",
+        "ph",
+        "dissolvedOxygen",
+        "ammoniaNitrogen",
+        "salinity",
+        "nitrite",
+        "hour",
+        "month",
+        "temperature_lag1",
+        "temperature_lag2",
+        "temperature_lag3",
+        "temperature_lag5",
+        "ph_lag1",
+        "ph_lag2",
+        "ph_lag3",
+        "ph_lag5",
+        "DO_lag1",
+        "DO_lag2",
+        "DO_lag3",
+        "DO_lag5",
+        "ammoniaNitrogen_lag1",
+        "ammoniaNitrogen_lag2",
+        "ammoniaNitrogen_lag3",
+        "ammoniaNitrogen_lag5",
+        "salinity_lag1",
+        "salinity_lag2",
+        "salinity_lag3",
+        "salinity_lag5",
+        "nitrite_lag1",
+        "nitrite_lag2",
+        "nitrite_lag3",
+        "nitrite_lag5"
+      ],
+      "models": {
+        "knn": {
+          "model_file": "ml\\models\\farm01_dissolvedOxygen_knn.joblib",
+          "scaler_file": "ml\\models\\farm01_dissolvedOxygen_knn_scaler.joblib"
+        },
+        "random_forest": {
+          "model_file": "ml\\models\\farm01_dissolvedOxygen_random_forest.joblib",
+          "scaler_file": null
+        },
+        "baseline": {
+          "model_file": null,
+          "scaler_file": null
+        }
+      }
+    },
+    "氨氮": {
+      "metric_key": "ammoniaNitrogen",
+      "final_model": "random_forest",
+      "feature_columns": [
+        "temperature",
+        "ph",
+        "dissolvedOxygen",
+        "ammoniaNitrogen",
+        "salinity",
+        "nitrite",
+        "hour",
+        "month",
+        "temperature_lag1",
+        "temperature_lag2",
+        "temperature_lag3",
+        "temperature_lag5",
+        "ph_lag1",
+        "ph_lag2",
+        "ph_lag3",
+        "ph_lag5",
+        "DO_lag1",
+        "DO_lag2",
+        "DO_lag3",
+        "DO_lag5",
+        "ammoniaNitrogen_lag1",
+        "ammoniaNitrogen_lag2",
+        "ammoniaNitrogen_lag3",
+        "ammoniaNitrogen_lag5",
+        "salinity_lag1",
+        "salinity_lag2",
+        "salinity_lag3",
+        "salinity_lag5",
+        "nitrite_lag1",
+        "nitrite_lag2",
+        "nitrite_lag3",
+        "nitrite_lag5"
+      ],
+      "models": {
+        "knn": {
+          "model_file": "ml\\models\\farm01_ammoniaNitrogen_knn.joblib",
+          "scaler_file": "ml\\models\\farm01_ammoniaNitrogen_knn_scaler.joblib"
+        },
+        "random_forest": {
+          "model_file": "ml\\models\\farm01_ammoniaNitrogen_random_forest.joblib",
+          "scaler_file": null
+        },
+        "baseline": {
+          "model_file": null,
+          "scaler_file": null
+        }
+      }
+    },
+    "盐度": {
+      "metric_key": "salinity",
+      "final_model": "baseline",
+      "feature_columns": [
+        "temperature",
+        "ph",
+        "dissolvedOxygen",
+        "ammoniaNitrogen",
+        "salinity",
+        "nitrite",
+        "hour",
+        "month",
+        "temperature_lag1",
+        "temperature_lag2",
+        "temperature_lag3",
+        "temperature_lag5",
+        "ph_lag1",
+        "ph_lag2",
+        "ph_lag3",
+        "ph_lag5",
+        "DO_lag1",
+        "DO_lag2",
+        "DO_lag3",
+        "DO_lag5",
+        "ammoniaNitrogen_lag1",
+        "ammoniaNitrogen_lag2",
+        "ammoniaNitrogen_lag3",
+        "ammoniaNitrogen_lag5",
+        "salinity_lag1",
+        "salinity_lag2",
+        "salinity_lag3",
+        "salinity_lag5",
+        "nitrite_lag1",
+        "nitrite_lag2",
+        "nitrite_lag3",
+        "nitrite_lag5"
+      ],
+      "models": {
+        "knn": {
+          "model_file": "ml\\models\\farm01_salinity_knn.joblib",
+          "scaler_file": "ml\\models\\farm01_salinity_knn_scaler.joblib"
+        },
+        "random_forest": {
+          "model_file": "ml\\models\\farm01_salinity_random_forest.joblib",
+          "scaler_file": null
+        },
+        "baseline": {
+          "model_file": null,
+          "scaler_file": null
+        }
+      }
+    },
+    "亚硝酸盐": {
+      "metric_key": "nitrite",
+      "final_model": "knn",
+      "feature_columns": [
+        "temperature",
+        "ph",
+        "dissolvedOxygen",
+        "ammoniaNitrogen",
+        "salinity",
+        "nitrite",
+        "hour",
+        "month",
+        "temperature_lag1",
+        "temperature_lag2",
+        "temperature_lag3",
+        "temperature_lag5",
+        "ph_lag1",
+        "ph_lag2",
+        "ph_lag3",
+        "ph_lag5",
+        "DO_lag1",
+        "DO_lag2",
+        "DO_lag3",
+        "DO_lag5",
+        "ammoniaNitrogen_lag1",
+        "ammoniaNitrogen_lag2",
+        "ammoniaNitrogen_lag3",
+        "ammoniaNitrogen_lag5",
+        "salinity_lag1",
+        "salinity_lag2",
+        "salinity_lag3",
+        "salinity_lag5",
+        "nitrite_lag1",
+        "nitrite_lag2",
+        "nitrite_lag3",
+        "nitrite_lag5"
+      ],
+      "models": {
+        "knn": {
+          "model_file": "ml\\models\\farm01_nitrite_knn.joblib",
+          "scaler_file": "ml\\models\\farm01_nitrite_knn_scaler.joblib"
+        },
+        "random_forest": {
+          "model_file": "ml\\models\\farm01_nitrite_random_forest.joblib",
+          "scaler_file": null
+        },
+        "baseline": {
+          "model_file": null,
+          "scaler_file": null
+        }
+      }
+    }
+  },
+  "天津市滨海新区李金山养殖场": {
+    "水温": {
+      "metric_key": "temperature",
+      "final_model": "random_forest",
+      "feature_columns": [
+        "temperature",
+        "ph",
+        "dissolvedOxygen",
+        "ammoniaNitrogen",
+        "salinity",
+        "nitrite",
+        "hour",
+        "month",
+        "temperature_lag1",
+        "temperature_lag2",
+        "temperature_lag3",
+        "temperature_lag5",
+        "ph_lag1",
+        "ph_lag2",
+        "ph_lag3",
+        "ph_lag5",
+        "DO_lag1",
+        "DO_lag2",
+        "DO_lag3",
+        "DO_lag5",
+        "ammoniaNitrogen_lag1",
+        "ammoniaNitrogen_lag2",
+        "ammoniaNitrogen_lag3",
+        "ammoniaNitrogen_lag5",
+        "salinity_lag1",
+        "salinity_lag2",
+        "salinity_lag3",
+        "salinity_lag5",
+        "nitrite_lag1",
+        "nitrite_lag2",
+        "nitrite_lag3",
+        "nitrite_lag5"
+      ],
+      "models": {
+        "knn": {
+          "model_file": "ml\\models\\farm02_temperature_knn.joblib",
+          "scaler_file": "ml\\models\\farm02_temperature_knn_scaler.joblib"
+        },
+        "random_forest": {
+          "model_file": "ml\\models\\farm02_temperature_random_forest.joblib",
+          "scaler_file": null
+        },
+        "baseline": {
+          "model_file": null,
+          "scaler_file": null
+        }
+      }
+    },
+    "pH": {
+      "metric_key": "ph",
+      "final_model": "random_forest",
+      "feature_columns": [
+        "temperature",
+        "ph",
+        "dissolvedOxygen",
+        "ammoniaNitrogen",
+        "salinity",
+        "nitrite",
+        "hour",
+        "month",
+        "temperature_lag1",
+        "temperature_lag2",
+        "temperature_lag3",
+        "temperature_lag5",
+        "ph_lag1",
+        "ph_lag2",
+        "ph_lag3",
+        "ph_lag5",
+        "DO_lag1",
+        "DO_lag2",
+        "DO_lag3",
+        "DO_lag5",
+        "ammoniaNitrogen_lag1",
+        "ammoniaNitrogen_lag2",
+        "ammoniaNitrogen_lag3",
+        "ammoniaNitrogen_lag5",
+        "salinity_lag1",
+        "salinity_lag2",
+        "salinity_lag3",
+        "salinity_lag5",
+        "nitrite_lag1",
+        "nitrite_lag2",
+        "nitrite_lag3",
+        "nitrite_lag5"
+      ],
+      "models": {
+        "knn": {
+          "model_file": "ml\\models\\farm02_ph_knn.joblib",
+          "scaler_file": "ml\\models\\farm02_ph_knn_scaler.joblib"
+        },
+        "random_forest": {
+          "model_file": "ml\\models\\farm02_ph_random_forest.joblib",
+          "scaler_file": null
+        },
+        "baseline": {
+          "model_file": null,
+          "scaler_file": null
+        }
+      }
+    },
+    "溶解氧": {
+      "metric_key": "dissolvedOxygen",
+      "final_model": "baseline",
+      "feature_columns": [
+        "temperature",
+        "ph",
+        "dissolvedOxygen",
+        "ammoniaNitrogen",
+        "salinity",
+        "nitrite",
+        "hour",
+        "month",
+        "temperature_lag1",
+        "temperature_lag2",
+        "temperature_lag3",
+        "temperature_lag5",
+        "ph_lag1",
+        "ph_lag2",
+        "ph_lag3",
+        "ph_lag5",
+        "DO_lag1",
+        "DO_lag2",
+        "DO_lag3",
+        "DO_lag5",
+        "ammoniaNitrogen_lag1",
+        "ammoniaNitrogen_lag2",
+        "ammoniaNitrogen_lag3",
+        "ammoniaNitrogen_lag5",
+        "salinity_lag1",
+        "salinity_lag2",
+        "salinity_lag3",
+        "salinity_lag5",
+        "nitrite_lag1",
+        "nitrite_lag2",
+        "nitrite_lag3",
+        "nitrite_lag5"
+      ],
+      "models": {
+        "knn": {
+          "model_file": "ml\\models\\farm02_dissolvedOxygen_knn.joblib",
+          "scaler_file": "ml\\models\\farm02_dissolvedOxygen_knn_scaler.joblib"
+        },
+        "random_forest": {
+          "model_file": "ml\\models\\farm02_dissolvedOxygen_random_forest.joblib",
+          "scaler_file": null
+        },
+        "baseline": {
+          "model_file": null,
+          "scaler_file": null
+        }
+      }
+    },
+    "氨氮": {
+      "metric_key": "ammoniaNitrogen",
+      "final_model": "random_forest",
+      "feature_columns": [
+        "temperature",
+        "ph",
+        "dissolvedOxygen",
+        "ammoniaNitrogen",
+        "salinity",
+        "nitrite",
+        "hour",
+        "month",
+        "temperature_lag1",
+        "temperature_lag2",
+        "temperature_lag3",
+        "temperature_lag5",
+        "ph_lag1",
+        "ph_lag2",
+        "ph_lag3",
+        "ph_lag5",
+        "DO_lag1",
+        "DO_lag2",
+        "DO_lag3",
+        "DO_lag5",
+        "ammoniaNitrogen_lag1",
+        "ammoniaNitrogen_lag2",
+        "ammoniaNitrogen_lag3",
+        "ammoniaNitrogen_lag5",
+        "salinity_lag1",
+        "salinity_lag2",
+        "salinity_lag3",
+        "salinity_lag5",
+        "nitrite_lag1",
+        "nitrite_lag2",
+        "nitrite_lag3",
+        "nitrite_lag5"
+      ],
+      "models": {
+        "knn": {
+          "model_file": "ml\\models\\farm02_ammoniaNitrogen_knn.joblib",
+          "scaler_file": "ml\\models\\farm02_ammoniaNitrogen_knn_scaler.joblib"
+        },
+        "random_forest": {
+          "model_file": "ml\\models\\farm02_ammoniaNitrogen_random_forest.joblib",
+          "scaler_file": null
+        },
+        "baseline": {
+          "model_file": null,
+          "scaler_file": null
+        }
+      }
+    },
+    "盐度": {
+      "metric_key": "salinity",
+      "final_model": "baseline",
+      "feature_columns": [
+        "temperature",
+        "ph",
+        "dissolvedOxygen",
+        "ammoniaNitrogen",
+        "salinity",
+        "nitrite",
+        "hour",
+        "month",
+        "temperature_lag1",
+        "temperature_lag2",
+        "temperature_lag3",
+        "temperature_lag5",
+        "ph_lag1",
+        "ph_lag2",
+        "ph_lag3",
+        "ph_lag5",
+        "DO_lag1",
+        "DO_lag2",
+        "DO_lag3",
+        "DO_lag5",
+        "ammoniaNitrogen_lag1",
+        "ammoniaNitrogen_lag2",
+        "ammoniaNitrogen_lag3",
+        "ammoniaNitrogen_lag5",
+        "salinity_lag1",
+        "salinity_lag2",
+        "salinity_lag3",
+        "salinity_lag5",
+        "nitrite_lag1",
+        "nitrite_lag2",
+        "nitrite_lag3",
+        "nitrite_lag5"
+      ],
+      "models": {
+        "knn": {
+          "model_file": "ml\\models\\farm02_salinity_knn.joblib",
+          "scaler_file": "ml\\models\\farm02_salinity_knn_scaler.joblib"
+        },
+        "random_forest": {
+          "model_file": "ml\\models\\farm02_salinity_random_forest.joblib",
+          "scaler_file": null
+        },
+        "baseline": {
+          "model_file": null,
+          "scaler_file": null
+        }
+      }
+    },
+    "亚硝酸盐": {
+      "metric_key": "nitrite",
+      "final_model": "knn",
+      "feature_columns": [
+        "temperature",
+        "ph",
+        "dissolvedOxygen",
+        "ammoniaNitrogen",
+        "salinity",
+        "nitrite",
+        "hour",
+        "month",
+        "temperature_lag1",
+        "temperature_lag2",
+        "temperature_lag3",
+        "temperature_lag5",
+        "ph_lag1",
+        "ph_lag2",
+        "ph_lag3",
+        "ph_lag5",
+        "DO_lag1",
+        "DO_lag2",
+        "DO_lag3",
+        "DO_lag5",
+        "ammoniaNitrogen_lag1",
+        "ammoniaNitrogen_lag2",
+        "ammoniaNitrogen_lag3",
+        "ammoniaNitrogen_lag5",
+        "salinity_lag1",
+        "salinity_lag2",
+        "salinity_lag3",
+        "salinity_lag5",
+        "nitrite_lag1",
+        "nitrite_lag2",
+        "nitrite_lag3",
+        "nitrite_lag5"
+      ],
+      "models": {
+        "knn": {
+          "model_file": "ml\\models\\farm02_nitrite_knn.joblib",
+          "scaler_file": "ml\\models\\farm02_nitrite_knn_scaler.joblib"
+        },
+        "random_forest": {
+          "model_file": "ml\\models\\farm02_nitrite_random_forest.joblib",
+          "scaler_file": null
+        },
+        "baseline": {
+          "model_file": null,
+          "scaler_file": null
+        }
+      }
+    }
+  }
+}

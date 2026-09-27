@@ -1,0 +1,152 @@
+{
+  "generatedAt": "2026-09-27 19:09:06",
+  "forecastHours": 24,
+  "farms": [
+    {
+      "farm": "天津市滨海新区志敏养殖场",
+      "lastActualTime": "2026-09-22 21:12:00",
+      "lastActualValues": {
+        "temperature": 19.2,
+        "ph": 8.05,
+        "do": 9.9,
+        "ammonia": 0.296,
+        "salinity": 14.1,
+        "nitrite": 0.025
+      },
+      "samplingIntervalHours": 5.133,
+      "modelTypes": {
+        "temperature": "random_forest",
+        "ph": "random_forest",
+        "do": "random_forest",
+        "ammonia": "random_forest",
+        "salinity": "baseline",
+        "nitrite": "knn"
+      },
+      "predictions": [
+        {
+          "time": "2026-09-23 02:19:59",
+          "horizonHours": 5.133,
+          "temperature": 21.3545,
+          "ph": 7.3519,
+          "do": 7.50765,
+          "ammonia": 0.163415,
+          "salinity": 14.1,
+          "nitrite": 0.0658
+        },
+        {
+          "time": "2026-09-23 07:27:59",
+          "horizonHours": 10.267,
+          "temperature": 23.1465,
+          "ph": 7.8403,
+          "do": 7.2967,
+          "ammonia": 0.165615,
+          "salinity": 14.1,
+          "nitrite": 0.1228
+        },
+        {
+          "time": "2026-09-23 12:35:59",
+          "horizonHours": 15.4,
+          "temperature": 23.5355,
+          "ph": 8.25435,
+          "do": 6.9267,
+          "ammonia": 0.179925,
+          "salinity": 14.1,
+          "nitrite": 0.212
+        },
+        {
+          "time": "2026-09-23 17:43:59",
+          "horizonHours": 20.533,
+          "temperature": 23.04,
+          "ph": 7.97925,
+          "do": 6.7084,
+          "ammonia": 0.165365,
+          "salinity": 14.1,
+          "nitrite": 0.0488
+        },
+        {
+          "time": "2026-09-23 22:51:59",
+          "horizonHours": 25.667,
+          "temperature": 22.703,
+          "ph": 8.13365,
+          "do": 7.2279,
+          "ammonia": 0.16287,
+          "salinity": 14.1,
+          "nitrite": 0.0556
+        }
+      ]
+    },
+    {
+      "farm": "天津市滨海新区李金山养殖场",
+      "lastActualTime": "2026-09-27 15:56:00",
+      "lastActualValues": {
+        "temperature": 23.2,
+        "ph": 7.99,
+        "do": 8.72,
+        "ammonia": 0.113,
+        "salinity": 15.0,
+        "nitrite": 0.024
+      },
+      "samplingIntervalHours": 5.15,
+      "modelTypes": {
+        "temperature": "random_forest",
+        "ph": "random_forest",
+        "do": "baseline",
+        "ammonia": "random_forest",
+        "salinity": "baseline",
+        "nitrite": "knn"
+      },
+      "predictions": [
+        {
+          "time": "2026-09-27 21:05:00",
+          "horizonHours": 5.15,
+          "temperature": 22.1405,
+          "ph": 7.81875,
+          "do": 8.72,
+          "ammonia": 0.16618,
+          "salinity": 15.0,
+          "nitrite": 0.0482
+        },
+        {
+          "time": "2026-09-28 02:14:00",
+          "horizonHours": 10.3,
+          "temperature": 22.616,
+          "ph": 7.0625,
+          "do": 8.72,
+          "ammonia": 0.16554,
+          "salinity": 15.0,
+          "nitrite": 0.1082
+        },
+        {
+          "time": "2026-09-28 07:23:00",
+          "horizonHours": 15.45,
+          "temperature": 24.0315,
+          "ph": 7.25625,
+          "do": 8.72,
+          "ammonia": 0.17254,
+          "salinity": 15.0,
+          "nitrite": 0.091
+        },
+        {
+          "time": "2026-09-28 12:32:00",
+          "horizonHours": 20.6,
+          "temperature": 23.718,
+          "ph": 8.1105,
+          "do": 8.72,
+          "ammonia": 0.166235,
+          "salinity": 15.0,
+          "nitrite": 0.179
+        },
+        {
+          "time": "2026-09-28 17:41:00",
+          "horizonHours": 25.75,
+          "temperature": 23.277,
+          "ph": 7.93515,
+          "do": 8.72,
+          "ammonia": 0.16247,
+          "salinity": 15.0,
+          "nitrite": 0.05
+        }
+      ]
+    }
+  ]
+}

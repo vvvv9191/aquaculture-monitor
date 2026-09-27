@@ -4,5 +4,5 @@ defineProps({ title: { type: String, required: true }, eyebrow: { type: String, 
 </script>
 
 <template>
-  <div class="app-shell"><SidebarNav /><main class="main-content"><header class="feature-topbar"><div><div class="eyebrow">{{ eyebrow }}</div><h1>{{ title }}</h1></div><div class="feature-topbar-right"><span class="live-dot"></span><span>模拟数据在线</span><span class="feature-clock">5G专网稳定</span></div></header><div class="feature-content"><slot /></div></main></div>
+  <div class="app-shell"><SidebarNav /><main class="main-content"><header class="feature-topbar"><div><div class="eyebrow">{{ eyebrow }}</div><h1>{{ title }}</h1></div><div class="feature-topbar-right"><span class="live-dot"></span><span>数据源已连接</span><span class="feature-clock">5G专网稳定</span></div></header><div class="feature-content"><slot /></div></main></div>
 </template>
