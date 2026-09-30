@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { DataAnalysis, DataLine, Grid, Histogram } from '@element-plus/icons-vue'
+import { DataLine, Grid, Histogram } from '@element-plus/icons-vue'
 import PageShell from '../components/PageShell.vue'
 import RealtimeChart from '../components/RealtimeChart.vue'
 import { FARM_OPTIONS, getFarmOption } from '../config/farms'
@@ -17,6 +17,13 @@ const currentPage = ref(1)
 const pageSize = 10
 const loading = ref(true)
 const metrics = WATER_QUALITY_METRICS
+const analysisBoxMetrics = [
+  { key: 'salinity', label: '盐度箱线图' },
+  { key: 'ph', label: 'pH 箱线图' },
+  { key: 'ammoniaNitrogen', label: '氨氮箱线图' },
+  { key: 'dissolvedOxygen', label: '溶解氧箱线图' },
+  { key: 'nitrite', label: '亚硝酸盐箱线图' },
+]
 const levelPriority = { normal: 0, yellow: 1, orange: 2, red: 3 }
 const levelLabels = { normal: '正常', yellow: '黄色风险', orange: '橙色风险', red: '红色风险' }
 const rangeOptions = [
@@ -32,6 +39,13 @@ const farmOptions = computed(() => {
   return (actualNames.length ? actualNames : FARM_OPTIONS.map((farm) => farm.name)).map((name) => getFarmOption(name) || { name, shortName: name })
 })
 const selectedFarmOption = computed(() => getFarmOption(selectedFarm.value) || { name: selectedFarm.value, shortName: selectedFarm.value })
+const analysisVisuals = computed(() => ({
+  heatmap: `/analysis/heatmap-${selectedFarmOption.value.id}.png`,
+  boxplots: analysisBoxMetrics.map((metric) => ({
+    ...metric,
+    src: `/analysis/boxplot-${selectedFarmOption.value.id}-${metric.key}.png`,
+  })),
+}))
 const selectedMetric = computed(() => metrics.find((metric) => metric.key === metricKey.value) || metrics[0])
 const selectedFarmRows = computed(() => store.aquacultureData.filter((row) => row.farmName === selectedFarm.value).slice().sort((a, b) => a.timestamp - b.timestamp))
 const latestFarmTimestamp = computed(() => selectedFarmRows.value.at(-1)?.timestamp || 0)
@@ -118,7 +132,10 @@ onMounted(async () => {
       <section class="panel page-chart-panel history-chart-panel"><div class="panel-heading"><div><span class="section-kicker">TIME SERIES</span><h2><el-icon><DataLine /></el-icon>{{ selectedFarmOption.shortName }} · {{ selectedMetric.label }}历史趋势</h2></div><span class="data-count">{{ rows.length }} 条监测记录</span></div><RealtimeChart :key="`${selectedFarm}-${metricKey}-${range}-${rows.length}`" :history="rows" :metric-key="metricKey" time-format="datetime" height="300px" /></section>
       <section class="stats-grid"><div class="stat-box"><span>平均值</span><strong>{{ stats.average }} <small>{{ selectedMetric.unit }}</small></strong></div><div class="stat-box"><span>最大值</span><strong>{{ stats.max }} <small>{{ selectedMetric.unit }}</small></strong></div><div class="stat-box"><span>最小值</span><strong>{{ stats.min }} <small>{{ selectedMetric.unit }}</small></strong></div><div class="stat-box"><span>标准差</span><strong>{{ stats.deviation }}</strong></div><div class="stat-box warning-stat"><span>异常次数</span><strong>{{ stats.abnormal }} <small>次</small></strong></div></section>
       <section class="panel table-panel"><div class="panel-heading"><div><span class="section-kicker">DATA RECORDS</span><h2><el-icon><Grid /></el-icon> 历史数据表格</h2></div><span class="simulation-label">真实 CSV 数据</span></div><div class="data-table-wrap"><table class="data-table history-data-table"><thead><tr><th>时间</th><th>养殖场</th><th>水温</th><th>pH</th><th>DO</th><th>氨氮</th><th>盐度</th><th>亚硝酸盐</th><th>数据质量</th></tr></thead><tbody><tr v-for="row in pagedRows" :key="row.id"><td>{{ row.time }}</td><td :title="row.farmName">{{ formatFarmName(row.farmName) }}</td><td>{{ formatMetricValue(row, 'temperature') }}</td><td>{{ formatMetricValue(row, 'ph') }}</td><td>{{ formatMetricValue(row, 'dissolvedOxygen') }}</td><td>{{ formatMetricValue(row, 'ammoniaNitrogen') }}</td><td>{{ formatMetricValue(row, 'salinity') }}</td><td>{{ formatMetricValue(row, 'nitrite') }}</td><td><span class="table-status" :class="row.quality === 'normal' ? 'done' : row.quality === 'yellow' ? 'pending' : row.quality === 'orange' ? 'processing' : 'severe'">{{ row.qualityLabel }}</span></td></tr><tr v-if="!pagedRows.length"><td colspan="9" class="table-empty">当前养殖场和时间范围暂无数据</td></tr></tbody></table></div><div class="pagination-row"><span>共 {{ tableRows.length }} 条记录</span><el-pagination v-model:current-page="currentPage" :page-size="pageSize" :total="tableRows.length" layout="prev, pager, next" background /></div></section>
-      <section class="analysis-reserved"><div><el-icon><DataAnalysis /></el-icon><strong>Spearman 相关分析</strong><span>预留 Python/FastAPI 分析接口</span></div><div><el-icon><Histogram /></el-icon><strong>相关性热力图</strong><span>等待真实数据分析模型</span></div><div><el-icon><Grid /></el-icon><strong>箱线图</strong><span>等待真实数据分析模型</span></div></section>
+      <section class="analysis-visuals">
+         <section class="panel analysis-visual-panel"><div class="panel-heading"><div><span class="section-kicker">CORRELATION HEATMAP</span><h2><el-icon><DataLine /></el-icon>{{ selectedFarmOption.shortName }} · 水质指标相关性热力图</h2></div><span class="analysis-source-label">2022—2026</span></div><div class="analysis-image-frame analysis-heatmap-frame"><img :src="analysisVisuals.heatmap" :alt="`${selectedFarmOption.name} 水质指标相关性热力图`" /></div></section>
+         <section class="panel analysis-visual-panel"><div class="panel-heading"><div><span class="section-kicker">BOXPLOT ANALYSIS</span><h2><el-icon><Histogram /></el-icon>{{ selectedFarmOption.shortName }} · 指标分布箱线图</h2></div><span class="analysis-source-label">5 项指标</span></div><div class="analysis-boxplot-grid"><figure v-for="item in analysisVisuals.boxplots" :key="item.key" class="analysis-boxplot-card"><figcaption>{{ item.label }}</figcaption><img :src="item.src" :alt="`${selectedFarmOption.name} ${item.label}`" /></figure></div></section>
+       </section>
     </template>
   </PageShell>
 </template>
