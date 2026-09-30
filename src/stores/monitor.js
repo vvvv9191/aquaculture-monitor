@@ -718,6 +718,10 @@ export const useMonitorStore = defineStore('monitor', () => {
     applyAutomaticControl(
       nextPoint
     )
+
+    applyAutomaticHeatingControl(
+      nextPoint
+    )
   }
 
 
@@ -885,6 +889,28 @@ export const useMonitorStore = defineStore('monitor', () => {
 
   /*
   |--------------------------------------------------------------------------
+  | 自动控制恒温加热器
+  |--------------------------------------------------------------------------
+  */
+
+  function applyAutomaticHeatingControl(point) {
+    const temperatureRule = DEVICE_CONTROL_CONFIG.heater
+    if (!temperatureRule) return
+
+    devices.value
+      .filter((device) => device.online && device.type === 'heater' && device.pondId === point.pondId && device.mode === 'auto')
+      .forEach((device) => {
+        if (device.status === 'off' && point.temperature < temperatureRule.lowThreshold) {
+          controlDevice(device.id, 'on', '自动', `水温低于 ${temperatureRule.lowThreshold}℃，自动启动恒温加热器`)
+        } else if (device.status === 'on' && point.temperature >= temperatureRule.highThreshold) {
+          controlDevice(device.id, 'off', '自动', `水温达到 ${temperatureRule.highThreshold}℃，自动关闭恒温加热器`)
+        }
+      })
+  }
+
+
+  /*
+  |--------------------------------------------------------------------------
   | 控制设备
   |--------------------------------------------------------------------------
   */
@@ -1033,6 +1059,9 @@ export const useMonitorStore = defineStore('monitor', () => {
       ) {
 
         applyAutomaticControl(
+          point
+        )
+        applyAutomaticHeatingControl(
           point
         )
       }

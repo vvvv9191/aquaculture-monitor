@@ -34,6 +34,7 @@ export const DEFAULT_WATER_QUALITY_SETTINGS = {
 // 设备控制规则与水质预警阈值分离，系统设置页面不会修改这里。
 export const DEVICE_CONTROL_CONFIG = {
   aerator: { label: '1号增氧机', lowThreshold: 5.2, highThreshold: 6.2 },
+  heater: { label: '恒温加热器', lowThreshold: 20, highThreshold: 22 },
   pump: { label: '循环水泵' },
 }
 
