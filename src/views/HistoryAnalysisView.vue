@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { DataLine, Grid, Histogram } from '@element-plus/icons-vue'
+import { DataLine, Grid } from '@element-plus/icons-vue'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import PageShell from '../components/PageShell.vue'
 import RealtimeChart from '../components/RealtimeChart.vue'
 import { FARM_OPTIONS, getFarmOption } from '../config/farms'
@@ -12,18 +13,12 @@ const store = useMonitorStore()
 const selectedFarm = ref(FARM_OPTIONS[0].name)
 const metricKey = ref('dissolvedOxygen')
 const range = ref('24h')
-const customDates = ref([])
+const customStart = ref(null)
+const customEnd = ref(null)
 const currentPage = ref(1)
 const pageSize = 10
 const loading = ref(true)
 const metrics = WATER_QUALITY_METRICS
-const analysisBoxMetrics = [
-  { key: 'salinity', label: '盐度箱线图' },
-  { key: 'ph', label: 'pH 箱线图' },
-  { key: 'ammoniaNitrogen', label: '氨氮箱线图' },
-  { key: 'dissolvedOxygen', label: '溶解氧箱线图' },
-  { key: 'nitrite', label: '亚硝酸盐箱线图' },
-]
 const levelPriority = { normal: 0, yellow: 1, orange: 2, red: 3 }
 const levelLabels = { normal: '正常', yellow: '黄色风险', orange: '橙色风险', red: '红色风险' }
 const rangeOptions = [
@@ -39,21 +34,33 @@ const farmOptions = computed(() => {
   return (actualNames.length ? actualNames : FARM_OPTIONS.map((farm) => farm.name)).map((name) => getFarmOption(name) || { name, shortName: name })
 })
 const selectedFarmOption = computed(() => getFarmOption(selectedFarm.value) || { name: selectedFarm.value, shortName: selectedFarm.value })
-const analysisVisuals = computed(() => ({
-  heatmap: `/analysis/heatmap-${selectedFarmOption.value.id}.png`,
-  boxplots: analysisBoxMetrics.map((metric) => ({
-    ...metric,
-    src: `/analysis/boxplot-${selectedFarmOption.value.id}-${metric.key}.png`,
-  })),
-}))
 const selectedMetric = computed(() => metrics.find((metric) => metric.key === metricKey.value) || metrics[0])
 const selectedFarmRows = computed(() => store.aquacultureData.filter((row) => row.farmName === selectedFarm.value).slice().sort((a, b) => a.timestamp - b.timestamp))
 const latestFarmTimestamp = computed(() => selectedFarmRows.value.at(-1)?.timestamp || 0)
+const firstFarmTimestamp = computed(() => selectedFarmRows.value[0]?.timestamp || 0)
+const farmFirstDate = computed(() => firstFarmTimestamp.value ? new Date(firstFarmTimestamp.value) : new Date())
+const farmLastDate = computed(() => latestFarmTimestamp.value ? new Date(latestFarmTimestamp.value) : new Date())
+const invalidCustomRange = computed(() => range.value === 'custom' && customStart.value && customEnd.value && customStart.value > customEnd.value)
 
-function toTimestamp(value) {
-  if (value instanceof Date) return value.getTime()
-  const timestamp = new Date(value).getTime()
-  return Number.isFinite(timestamp) ? timestamp : 0
+// 每家养殖场独立使用自身的完整数据日期区间；跨年可分别从开始/结束日历浏览。
+function resetCustomDates() {
+  customStart.value = firstFarmTimestamp.value ? new Date(firstFarmTimestamp.value) : null
+  customEnd.value = latestFarmTimestamp.value ? new Date(latestFarmTimestamp.value) : null
+}
+
+function disableCustomDate(date) {
+  if (!firstFarmTimestamp.value || !latestFarmTimestamp.value) return false
+  const day = new Date(date)
+  day.setHours(0, 0, 0, 0)
+  const first = new Date(firstFarmTimestamp.value)
+  first.setHours(0, 0, 0, 0)
+  const last = new Date(latestFarmTimestamp.value)
+  last.setHours(23, 59, 59, 999)
+  return day < first || day > last
+}
+
+function formatPickerDate(value) {
+  return value ? new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(value) : '--'
 }
 
 function getRangeStart() {
@@ -61,12 +68,12 @@ function getRangeStart() {
   if (range.value === '24h') return latestFarmTimestamp.value - 24 * 60 * 60 * 1000
   if (range.value === '7d') return latestFarmTimestamp.value - 7 * 24 * 60 * 60 * 1000
   if (range.value === '30d') return latestFarmTimestamp.value - 30 * 24 * 60 * 60 * 1000
-  if (range.value === 'custom' && customDates.value?.length === 2) return toTimestamp(customDates.value[0])
+  if (range.value === 'custom') return customStart.value?.getTime() ?? firstFarmTimestamp.value
   return 0
 }
 
 function getRangeEnd() {
-  if (range.value === 'custom' && customDates.value?.length === 2) return toTimestamp(customDates.value[1])
+  if (range.value === 'custom') return customEnd.value?.getTime() ?? latestFarmTimestamp.value
   return latestFarmTimestamp.value
 }
 
@@ -78,6 +85,7 @@ function qualityForRow(row) {
 }
 
 const rows = computed(() => {
+  if (invalidCustomRange.value) return []
   const start = getRangeStart()
   const end = getRangeEnd()
   return selectedFarmRows.value.filter((row) => row.timestamp >= start && row.timestamp <= end).map((row) => ({
@@ -115,7 +123,14 @@ function formatFarmName(name) {
 watch(farmOptions, (options) => {
   if (options.length && !options.some((farm) => farm.name === selectedFarm.value)) selectedFarm.value = options[0].name
 }, { immediate: true })
-watch([selectedFarm, range, customDates], () => { currentPage.value = 1 }, { deep: true })
+watch([selectedFarm, range], () => {
+  currentPage.value = 1
+  if (range.value === 'custom') resetCustomDates()
+})
+watch([customStart, customEnd], () => { currentPage.value = 1 })
+watch([firstFarmTimestamp, latestFarmTimestamp], () => {
+  if (range.value === 'custom' && (!customStart.value || !customEnd.value)) resetCustomDates()
+})
 
 onMounted(async () => {
   loading.value = true
@@ -125,17 +140,15 @@ onMounted(async () => {
 </script>
 
 <template>
+  <el-config-provider :locale="zhCn">
   <PageShell title="历史数据分析">
-    <section class="filter-bar panel history-filter"><div class="filter-intro"><span class="section-kicker">HISTORICAL ANALYSIS</span><strong>真实监测数据与统计分析</strong></div><div class="filter-item"><label>养殖场</label><el-select v-model="selectedFarm"><el-option v-for="farm in farmOptions" :key="farm.name" :label="farm.name" :value="farm.name" /></el-select></div><div class="filter-item"><label>水质指标</label><el-select v-model="metricKey"><el-option v-for="metric in metrics" :key="metric.key" :label="metric.label" :value="metric.key" /></el-select></div><div class="filter-item"><label>时间范围</label><el-select v-model="range"><el-option v-for="option in rangeOptions" :key="option.value" :label="option.label" :value="option.value" /></el-select></div><el-date-picker v-if="range === 'custom'" v-model="customDates" type="datetimerange" range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间" /></section>
+    <section class="filter-bar panel history-filter"><div class="filter-intro"><span class="section-kicker">HISTORICAL ANALYSIS</span><strong>真实监测数据与统计分析</strong></div><div class="filter-item"><label>养殖场</label><el-select v-model="selectedFarm"><el-option v-for="farm in farmOptions" :key="farm.name" :label="farm.name" :value="farm.name" /></el-select></div><div class="filter-item"><label>水质指标</label><el-select v-model="metricKey"><el-option v-for="metric in metrics" :key="metric.key" :label="metric.label" :value="metric.key" /></el-select></div><div class="filter-item"><label>时间范围</label><el-select v-model="range"><el-option v-for="option in rangeOptions" :key="option.value" :label="option.label" :value="option.value" /></el-select></div><div v-if="range === 'custom'" class="history-custom-range"><div class="history-custom-picker"><label>开始时间</label><el-date-picker v-model="customStart" type="datetime" format="YYYY-MM-DD HH:mm" placeholder="选择开始时间" :disabled-date="disableCustomDate" /></div><span class="history-range-separator">至</span><div class="history-custom-picker"><label>结束时间</label><el-date-picker v-model="customEnd" type="datetime" format="YYYY-MM-DD HH:mm" placeholder="选择结束时间" :disabled-date="disableCustomDate" /></div><small class="history-custom-hint">可选：{{ formatPickerDate(farmFirstDate) }} 至 {{ formatPickerDate(farmLastDate) }}<em v-if="invalidCustomRange">结束时间必须晚于开始时间</em></small></div></section>
     <div v-if="loading" class="page-loading">正在读取真实监测数据...</div>
     <template v-else>
       <section class="panel page-chart-panel history-chart-panel"><div class="panel-heading"><div><span class="section-kicker">TIME SERIES</span><h2><el-icon><DataLine /></el-icon>{{ selectedFarmOption.shortName }} · {{ selectedMetric.label }}历史趋势</h2></div><span class="data-count">{{ rows.length }} 条监测记录</span></div><RealtimeChart :key="`${selectedFarm}-${metricKey}-${range}-${rows.length}`" :history="rows" :metric-key="metricKey" time-format="datetime" height="300px" /></section>
       <section class="stats-grid"><div class="stat-box"><span>平均值</span><strong>{{ stats.average }} <small>{{ selectedMetric.unit }}</small></strong></div><div class="stat-box"><span>最大值</span><strong>{{ stats.max }} <small>{{ selectedMetric.unit }}</small></strong></div><div class="stat-box"><span>最小值</span><strong>{{ stats.min }} <small>{{ selectedMetric.unit }}</small></strong></div><div class="stat-box"><span>标准差</span><strong>{{ stats.deviation }}</strong></div><div class="stat-box warning-stat"><span>异常次数</span><strong>{{ stats.abnormal }} <small>次</small></strong></div></section>
       <section class="panel table-panel"><div class="panel-heading"><div><span class="section-kicker">DATA RECORDS</span><h2><el-icon><Grid /></el-icon> 历史数据表格</h2></div><span class="simulation-label">真实 CSV 数据</span></div><div class="data-table-wrap"><table class="data-table history-data-table"><thead><tr><th>时间</th><th>养殖场</th><th>水温</th><th>pH</th><th>DO</th><th>氨氮</th><th>盐度</th><th>亚硝酸盐</th><th>数据质量</th></tr></thead><tbody><tr v-for="row in pagedRows" :key="row.id"><td>{{ row.time }}</td><td :title="row.farmName">{{ formatFarmName(row.farmName) }}</td><td>{{ formatMetricValue(row, 'temperature') }}</td><td>{{ formatMetricValue(row, 'ph') }}</td><td>{{ formatMetricValue(row, 'dissolvedOxygen') }}</td><td>{{ formatMetricValue(row, 'ammoniaNitrogen') }}</td><td>{{ formatMetricValue(row, 'salinity') }}</td><td>{{ formatMetricValue(row, 'nitrite') }}</td><td><span class="table-status" :class="row.quality === 'normal' ? 'done' : row.quality === 'yellow' ? 'pending' : row.quality === 'orange' ? 'processing' : 'severe'">{{ row.qualityLabel }}</span></td></tr><tr v-if="!pagedRows.length"><td colspan="9" class="table-empty">当前养殖场和时间范围暂无数据</td></tr></tbody></table></div><div class="pagination-row"><span>共 {{ tableRows.length }} 条记录</span><el-pagination v-model:current-page="currentPage" :page-size="pageSize" :total="tableRows.length" layout="prev, pager, next" background /></div></section>
-      <section class="analysis-visuals">
-         <section class="panel analysis-visual-panel"><div class="panel-heading"><div><span class="section-kicker">CORRELATION HEATMAP</span><h2><el-icon><DataLine /></el-icon>{{ selectedFarmOption.shortName }} · 水质指标相关性热力图</h2></div><span class="analysis-source-label">2022—2026</span></div><div class="analysis-image-frame analysis-heatmap-frame"><img :src="analysisVisuals.heatmap" :alt="`${selectedFarmOption.name} 水质指标相关性热力图`" /></div></section>
-         <section class="panel analysis-visual-panel"><div class="panel-heading"><div><span class="section-kicker">BOXPLOT ANALYSIS</span><h2><el-icon><Histogram /></el-icon>{{ selectedFarmOption.shortName }} · 指标分布箱线图</h2></div><span class="analysis-source-label">5 项指标</span></div><div class="analysis-boxplot-grid"><figure v-for="item in analysisVisuals.boxplots" :key="item.key" class="analysis-boxplot-card"><figcaption>{{ item.label }}</figcaption><img :src="item.src" :alt="`${selectedFarmOption.name} ${item.label}`" /></figure></div></section>
-       </section>
     </template>
   </PageShell>
+  </el-config-provider>
 </template>
