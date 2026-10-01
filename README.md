@@ -1,4 +1,4 @@
-# 基于物联网 + 5G 的天津沿海水产养殖智能监控系统
+# TJ5G 天津沿海水产养殖智能监控系统
 
 Vue 3 + Vite 的深色科技风水产养殖可视化平台。当前使用统一 Mock Data 完成首页和六个业务页面演示，真实传感器、MQTT、FastAPI、MySQL 暂未接入。
 
@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-浏览器访问 `http://localhost:5173/`。
+浏览器访问 `https://aquaculture-monitor-five.vercel.app/`。
 
 ## 页面路由
 
