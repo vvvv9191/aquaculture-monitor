@@ -4,11 +4,6 @@ Vue 3 + Vite 的深色科技风水产养殖可视化平台。当前使用统一 
 
 ## 运行
 
-```bash
-npm install
-npm run dev
-```
-
 浏览器访问 `https://aquaculture-monitor-five.vercel.app/`。
 
 ## 页面路由
