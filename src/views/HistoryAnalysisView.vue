@@ -19,7 +19,6 @@ const currentPage = ref(1)
 const pageSize = 10
 const loading = ref(true)
 const metrics = WATER_QUALITY_METRICS
-const levelPriority = { normal: 0, yellow: 1, orange: 2, red: 3 }
 const levelLabels = { normal: '正常', yellow: '黄色预警', orange: '橙色预警', red: '红色预警' }
 const rangeOptions = [
   { label: '最近24小时', value: '24h' },
@@ -89,11 +88,9 @@ function getRangeEnd() {
   return latestFarmTimestamp.value
 }
 
+// 数据质量只判断当前选中的指标；未选中的其他指标不参与当前质量等级和次数统计。
 function qualityForRow(row) {
-  return metrics.reduce((worst, metric) => {
-    const level = getAlertLevel(metric.key, row[metric.key], store.settings)
-    return levelPriority[level] > levelPriority[worst] ? level : worst
-  }, 'normal')
+  return getAlertLevel(metricKey.value, row[metricKey.value], store.settings)
 }
 
 const rows = computed(() => {
@@ -167,7 +164,7 @@ onMounted(async () => {
     <template v-else>
       <section class="panel page-chart-panel history-chart-panel"><div class="panel-heading"><div><span class="section-kicker">TIME SERIES</span><h2><el-icon><DataLine /></el-icon>{{ selectedFarmOption.shortName }} · {{ selectedMetric.label }}历史趋势</h2></div><span class="data-count">{{ rows.length }} 条监测记录</span></div><RealtimeChart :key="`${selectedFarm}-${metricKey}-${range}-${rows.length}`" :history="rows" :metric-key="metricKey" time-format="datetime" height="300px" /></section>
       <section class="stats-grid"><div class="stat-box"><span>平均值</span><strong>{{ stats.average }} <small>{{ selectedMetric.unit }}</small></strong></div><div class="stat-box"><span>最大值</span><strong>{{ stats.max }} <small>{{ selectedMetric.unit }}</small></strong></div><div class="stat-box"><span>最小值</span><strong>{{ stats.min }} <small>{{ selectedMetric.unit }}</small></strong></div><div class="stat-box"><span>标准差</span><strong>{{ stats.deviation }}</strong></div><div class="stat-box quality-normal"><span>正常次数</span><strong>{{ stats.normal }} <small>次</small></strong></div><div class="stat-box quality-yellow"><span>黄色预警</span><strong>{{ stats.yellow }} <small>次</small></strong></div><div class="stat-box quality-orange"><span>橙色预警</span><strong>{{ stats.orange }} <small>次</small></strong></div><div class="stat-box quality-red"><span>红色预警</span><strong>{{ stats.red }} <small>次</small></strong></div></section>
-      <section class="panel table-panel"><div class="panel-heading"><div><span class="section-kicker">DATA RECORDS</span><h2><el-icon><Grid /></el-icon> 历史数据表格</h2></div><span class="simulation-label">真实 CSV 数据</span></div><div class="data-table-wrap"><table class="data-table history-data-table"><thead><tr><th>时间</th><th>养殖场</th><th>水温</th><th>pH</th><th>DO</th><th>氨氮</th><th>盐度</th><th>亚硝酸盐</th><th>数据质量</th></tr></thead><tbody><tr v-for="row in pagedRows" :key="row.id"><td>{{ row.time }}</td><td :title="row.farmName">{{ formatFarmName(row.farmName) }}</td><td>{{ formatMetricValue(row, 'temperature') }}</td><td>{{ formatMetricValue(row, 'ph') }}</td><td>{{ formatMetricValue(row, 'dissolvedOxygen') }}</td><td>{{ formatMetricValue(row, 'ammoniaNitrogen') }}</td><td>{{ formatMetricValue(row, 'salinity') }}</td><td>{{ formatMetricValue(row, 'nitrite') }}</td><td><span class="table-status" :class="row.quality === 'normal' ? 'done' : row.quality === 'yellow' ? 'pending' : row.quality === 'orange' ? 'processing' : 'severe'">{{ row.qualityLabel }}</span></td></tr><tr v-if="!pagedRows.length"><td colspan="9" class="table-empty">当前养殖场和时间范围暂无数据</td></tr></tbody></table></div><div class="pagination-row"><span>共 {{ tableRows.length }} 条记录</span><el-pagination v-model:current-page="currentPage" :page-size="pageSize" :total="tableRows.length" layout="prev, pager, next" background /></div></section>
+      <section class="panel table-panel"><div class="panel-heading"><div><span class="section-kicker">DATA RECORDS</span><h2><el-icon><Grid /></el-icon> 历史数据表格</h2></div><span class="simulation-label">真实数据 · 按当前指标阈值判断</span></div><div class="data-table-wrap"><table class="data-table history-data-table"><thead><tr><th>时间</th><th>养殖场</th><th>水温</th><th>pH</th><th>DO</th><th>氨氮</th><th>盐度</th><th>亚硝酸盐</th><th>数据质量</th></tr></thead><tbody><tr v-for="row in pagedRows" :key="row.id"><td>{{ row.time }}</td><td :title="row.farmName">{{ formatFarmName(row.farmName) }}</td><td>{{ formatMetricValue(row, 'temperature') }}</td><td>{{ formatMetricValue(row, 'ph') }}</td><td>{{ formatMetricValue(row, 'dissolvedOxygen') }}</td><td>{{ formatMetricValue(row, 'ammoniaNitrogen') }}</td><td>{{ formatMetricValue(row, 'salinity') }}</td><td>{{ formatMetricValue(row, 'nitrite') }}</td><td><span class="table-status" :class="row.quality === 'normal' ? 'done' : row.quality === 'yellow' ? 'pending' : row.quality === 'orange' ? 'processing' : 'severe'">{{ row.qualityLabel }}</span></td></tr><tr v-if="!pagedRows.length"><td colspan="9" class="table-empty">当前养殖场和时间范围暂无数据</td></tr></tbody></table></div><div class="pagination-row"><span>共 {{ tableRows.length }} 条记录</span><el-pagination v-model:current-page="currentPage" :page-size="pageSize" :total="tableRows.length" layout="prev, pager, next" background /></div></section>
     </template>
   </PageShell>
   </el-config-provider>
