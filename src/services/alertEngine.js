@@ -51,20 +51,11 @@ function buildCommonAlert({ farm, metric, value, level, direction, time, source,
   }
 }
 
-function latestByFarm(points = []) {
-  const latest = new Map()
-  points.forEach((point) => {
-    const farm = String(point?.farmName || point?.farm || '').trim()
-    if (!farm) return
-    const current = latest.get(farm)
-    if (!current || Number(point.timestamp || 0) >= Number(current.timestamp || 0)) latest.set(farm, point)
-  })
-  return [...latest.values()]
-}
-
 export function evaluateRealtimeAlerts({ points = [], settings }) {
-  return latestByFarm(points).flatMap((point) => {
+  // 历史数据分析“全部数据”范围：每条记录的六项指标逐项生成告警记录，不再只取最新一条。
+  return points.flatMap((point) => {
     const farm = String(point.farmName || point.farm || '').trim()
+    if (!farm) return []
     return WATER_QUALITY_METRICS.flatMap((metric) => {
       const value = metricValue(point, metric)
       if (!hasNumber(value)) return []
@@ -72,8 +63,8 @@ export function evaluateRealtimeAlerts({ points = [], settings }) {
       if (level === 'normal') return []
       const direction = getWarningDirection(metric.key, value, settings)
       return [{
-        id: `realtime-${slugify(farm)}-${metric.key}-${slugify(point.time || point.timestamp)}`,
-        ...buildCommonAlert({ farm, metric, value, level, direction, time: point.time, source: 'realtime', settings }),
+        id: `history-${slugify(farm)}-${metric.key}-${slugify(point.id || point.time || point.timestamp)}`,
+        ...buildCommonAlert({ farm, metric, value, level, direction, time: point.time, source: 'history', settings }),
         pondId: point.pondId,
         status: '未处理',
       }]
@@ -209,8 +200,9 @@ export function mergeContinuousAlerts(alerts = []) {
 
 export function getAlertSummary(alerts = []) {
   return {
-    realtime: alerts.filter((alert) => alert.source === 'realtime').length,
-    forecast: alerts.filter((alert) => alert.source === 'forecast').length,
+    realtime: alerts.filter((alert) => alert.source === 'history' || alert.source === 'realtime').length,
+    forecast: 0,
+    yellow: alerts.filter((alert) => alert.level === 'yellow').length,
     red: alerts.filter((alert) => alert.level === 'red').length,
     unhandled: alerts.filter((alert) => !['已处理', '已解除'].includes(alert.status)).length,
   }
