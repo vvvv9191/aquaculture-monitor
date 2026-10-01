@@ -23,6 +23,7 @@ import { getAlertLevel } from '../utils/alert'
 const clone = (value) => JSON.parse(JSON.stringify(value))
 const SETTINGS_STORAGE_KEY = 'aquaculture-monitor-water-quality-settings'
 const CULTURE_STORAGE_KEY = 'aquaculture-monitor-culture-profile'
+const SAVED_THRESHOLD_PROFILES_KEY = 'aquaculture-monitor-saved-threshold-profiles'
 
 function readStorage(key, fallback) {
   try {
@@ -153,6 +154,8 @@ export const useMonitorStore = defineStore('monitor', () => {
     species: CULTURE_OPTIONS.species[0],
     stage: CULTURE_OPTIONS.stages[1],
   }))
+
+  const savedThresholdProfiles = ref(readStorage(SAVED_THRESHOLD_PROFILES_KEY, []))
 
   const selectedPondId = ref('POND-01')
 
@@ -1296,6 +1299,40 @@ export const useMonitorStore = defineStore('monitor', () => {
 
   /*
   |--------------------------------------------------------------------------
+  | 记录已保存的品种/阶段阈值快照
+  |--------------------------------------------------------------------------
+  */
+
+  function saveThresholdProfile() {
+    const species = culture.value.species
+    const stage = culture.value.stage
+    const profile = {
+      id: `${species}::${stage}`,
+      species,
+      stage,
+      settings: clone(settings.value),
+      savedAt: formatDateTime(new Date()),
+    }
+    const existing = Array.isArray(savedThresholdProfiles.value) ? savedThresholdProfiles.value : []
+    savedThresholdProfiles.value = [profile, ...existing.filter((item) => item.id !== profile.id)]
+    try {
+      window.localStorage.setItem(SAVED_THRESHOLD_PROFILES_KEY, JSON.stringify(savedThresholdProfiles.value))
+    } catch {
+      // localStorage 不可用时仍在当前会话中展示。
+    }
+    return profile
+  }
+
+  function applyThresholdProfile(profile) {
+    if (!profile?.settings) return { valid: false, errors: ['保存的阈值配置不存在。'] }
+    const validation = saveSettings(profile.settings)
+    if (!validation.valid) return validation
+    saveCulture({ species: profile.species, stage: profile.stage })
+    return validation
+  }
+
+  /*
+  |--------------------------------------------------------------------------
   | 销毁
   |--------------------------------------------------------------------------
   */
@@ -1362,6 +1399,8 @@ export const useMonitorStore = defineStore('monitor', () => {
 
     culture,
 
+    savedThresholdProfiles,
+
     overallQuality,
 
     init,
@@ -1385,6 +1424,10 @@ export const useMonitorStore = defineStore('monitor', () => {
     markAlertHandled,
 
     saveSettings,
+
+    saveThresholdProfile,
+
+    applyThresholdProfile,
 
     resetSettings,
 

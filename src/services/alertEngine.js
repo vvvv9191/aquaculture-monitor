@@ -203,6 +203,7 @@ export function getAlertSummary(alerts = []) {
     realtime: alerts.filter((alert) => alert.source === 'history' || alert.source === 'realtime').length,
     forecast: 0,
     yellow: alerts.filter((alert) => alert.level === 'yellow').length,
+    orange: alerts.filter((alert) => alert.level === 'orange').length,
     red: alerts.filter((alert) => alert.level === 'red').length,
     unhandled: alerts.filter((alert) => !['已处理', '已解除'].includes(alert.status)).length,
   }
