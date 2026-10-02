@@ -109,17 +109,18 @@ function buildTimestamp(date, time) {
  * 防止 CSV -> JSON 后出现空值、字符串数字等情况
  */
 function toNumber(value) {
+  // 缺测值必须保持为空，不能把“未知”当成 0 参与告警或统计。
   if (
     value === null ||
     value === undefined ||
-    value === ''
+    String(value).trim() === ''
   ) {
-    return 0
+    return null
   }
 
   const result = Number(value)
 
-  return Number.isFinite(result) ? result : 0
+  return Number.isFinite(result) ? result : null
 }
 
 function readCsvMetric(item, metric) {
@@ -162,7 +163,10 @@ export const useMonitorStore = defineStore('monitor', () => {
   const initialized = ref(false)
 
   const realtimeRunning = ref(false)
+  const dataError = ref('')
+  const lastSyncAt = ref('')
 
+  // 非响应式 Set 只负责去重；设备本身保存 pending/error 以便页面展示。
   const pendingDeviceActions = new Set()
 
 
@@ -277,20 +281,24 @@ export const useMonitorStore = defineStore('monitor', () => {
           (point) => point.pondId
         )
     )
+    // “告警设备”按当前告警养殖池中的在线设备统计，而不是按池数量统计。
+    const warning = devices.value.filter((device) => device.online && warningPonds.has(device.pondId)).length
 
     return {
       online,
 
       normal: Math.max(
-        online - warningPonds.size,
+        online - warning,
         0
       ),
 
-      warning: warningPonds.size,
+      warning,
 
-      network: realtimeRunning.value
-        ? '数据源已连接'
-        : '连接中',
+      network: dataError.value
+        ? '数据源异常'
+        : realtimeRunning.value
+          ? '数据源已连接'
+          : '连接中',
     }
   })
 
@@ -541,6 +549,7 @@ export const useMonitorStore = defineStore('monitor', () => {
       return
     }
 
+    dataError.value = ''
 
     try {
 
@@ -656,13 +665,15 @@ export const useMonitorStore = defineStore('monitor', () => {
 
       realtimeRunning.value =
         true
-
-
+      lastSyncAt.value = formatDateTime(new Date())
 
       await refreshPrediction()
 
-    } catch {
+    } catch (error) {
       realtimeRunning.value = false
+      initialized.value = false
+      dataError.value = error instanceof Error ? error.message : '监测数据加载失败'
+      throw error
     }
   }
 
@@ -924,86 +935,51 @@ export const useMonitorStore = defineStore('monitor', () => {
     source = '手动',
     detail = '设备状态已更新'
   ) {
-
-    const device =
-      devices.value.find(
-        (item) =>
-          item.id === deviceId
-      )
-
+    const device = devices.value.find((item) => item.id === deviceId)
 
     if (
       !device ||
       device.status === status ||
-      pendingDeviceActions.has(
-        deviceId
-      )
+      pendingDeviceActions.has(deviceId)
     ) {
-      return
+      return { success: false, skipped: true }
     }
 
+    pendingDeviceActions.add(deviceId)
+    devices.value = devices.value.map((item) => item.id === deviceId
+      ? { ...item, pending: true, errorMessage: '' }
+      : item)
 
-    pendingDeviceActions.add(
-      deviceId
-    )
+    try {
+      const result = await deviceService.control(deviceId, status)
+      if (result?.success === false) throw new Error(result.message || '设备控制未确认')
 
-
-    await deviceService.control(
-      deviceId,
-      status
-    )
-
-
-    const time =
-      formatDateTime(
-        new Date()
-      )
-
-
-    devices.value =
-      devices.value.map(
-        (item) =>
-          item.id === deviceId
-            ? {
-                ...item,
-                status,
-                lastRunTime: time,
-                lastAction: detail,
-              }
-            : item
-      )
-
-
-    deviceLogs.value = [
-
-      {
-        id:
-          `LOG-${Date.now()}`,
-
-        time,
-
-        deviceId,
-
-        deviceName:
-          device.name,
-
-        action:
-          status === 'on'
-            ? '开启'
-            : '关闭',
-
-        source,
-
-        detail,
-      },
-
-      ...deviceLogs.value,
-    ]
-
-
-    pendingDeviceActions.delete(
-      deviceId
-    )
+      const time = formatDateTime(new Date())
+      devices.value = devices.value.map((item) => item.id === deviceId
+        ? { ...item, status, pending: false, errorMessage: '', lastRunTime: time, lastAction: detail }
+        : item)
+      deviceLogs.value = [
+        {
+          id: `LOG-${Date.now()}`,
+          time,
+          deviceId,
+          deviceName: device.name,
+          action: status === 'on' ? '开启' : '关闭',
+          source,
+          detail,
+        },
+        ...deviceLogs.value,
+      ]
+      return { success: true }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '设备控制失败，请稍后重试'
+      devices.value = devices.value.map((item) => item.id === deviceId
+        ? { ...item, pending: false, errorMessage: message, lastAction: message }
+        : item)
+      return { success: false, error: message }
+    } finally {
+      pendingDeviceActions.delete(deviceId)
+    }
   }
 
 
@@ -1017,31 +993,19 @@ export const useMonitorStore = defineStore('monitor', () => {
     deviceId,
     mode
   ) {
+    const device = devices.value.find((item) => item.id === deviceId)
+    if (!device || device.pending) return { success: false, skipped: true }
 
-    await deviceService.setMode(
-      deviceId,
-      mode
-    )
+    devices.value = devices.value.map((item) => item.id === deviceId ? { ...item, pending: true, errorMessage: '' } : item)
+    try {
+      const result = await deviceService.setMode(deviceId, mode)
+      if (result?.success === false) throw new Error(result.message || '模式切换未确认')
 
+      devices.value = devices.value.map((device) => device.id === deviceId
+        ? { ...device, mode, pending: false, errorMessage: '', lastAction: mode === 'auto' ? '已切换自动模式' : '已切换手动模式' }
+        : device)
 
-    devices.value =
-      devices.value.map(
-        (device) =>
-          device.id === deviceId
-            ? {
-                ...device,
-                mode,
-
-                lastAction:
-                  mode === 'auto'
-                    ? '已切换自动模式'
-                    : '已切换手动模式',
-              }
-            : device
-      )
-
-
-    if (mode === 'auto') {
+      if (mode === 'auto') {
 
       const device =
         devices.value.find(
@@ -1068,6 +1032,17 @@ export const useMonitorStore = defineStore('monitor', () => {
           point
         )
       }
+      }
+      return { success: true }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '模式切换失败，请稍后重试'
+      devices.value = devices.value.map((item) => item.id === deviceId
+        ? { ...item, pending: false, errorMessage: message, lastAction: message }
+        : item)
+      return { success: false, error: message }
+    } finally {
+      // 保证失败、网络异常时也能恢复按钮状态。
+      devices.value = devices.value.map((item) => item.id === deviceId ? { ...item, pending: false } : item)
     }
   }
 
@@ -1248,6 +1223,7 @@ export const useMonitorStore = defineStore('monitor', () => {
         [point.pondId]: updated,
       }
       applyAutomaticControl(updated)
+      applyAutomaticHeatingControl(updated)
       return updated
     })
 
@@ -1394,6 +1370,8 @@ export const useMonitorStore = defineStore('monitor', () => {
     aerator,
 
     prediction,
+    dataError,
+    lastSyncAt,
 
     settings,
 

@@ -151,8 +151,13 @@ watch([firstFarmTimestamp, latestFarmTimestamp], () => {
 
 onMounted(async () => {
   loading.value = true
-  await store.init()
-  loading.value = false
+  try {
+    await store.init()
+  } catch {
+    // 具体错误由 store.dataError 呈现。
+  } finally {
+    loading.value = false
+  }
 })
 </script>
 
@@ -161,7 +166,8 @@ onMounted(async () => {
   <PageShell title="历史数据分析">
     <section class="filter-bar panel history-filter" :class="{ 'is-custom-range': range === 'custom' }"><div class="filter-intro"><span class="section-kicker">HISTORICAL ANALYSIS</span><strong>真实监测数据与统计分析</strong></div><div class="filter-item"><label>养殖场</label><el-select v-model="selectedFarm"><el-option v-for="farm in farmOptions" :key="farm.name" :label="farm.name" :value="farm.name" /></el-select></div><div class="filter-item"><label>水质指标</label><el-select v-model="metricKey"><el-option v-for="metric in metrics" :key="metric.key" :label="metric.label" :value="metric.key" /></el-select></div><div class="filter-item"><label>时间范围</label><el-select v-model="range"><el-option v-for="option in rangeOptions" :key="option.value" :label="option.label" :value="option.value" /></el-select></div><div v-if="range === 'custom'" class="history-custom-range"><div class="history-custom-picker"><label>开始时间</label><el-date-picker v-model="customStart" type="date" format="YYYY-MM-DD" placeholder="选择开始时间" :disabled-date="disableCustomDate" popper-class="history-date-picker-popper" /></div><span class="history-range-separator">至</span><div class="history-custom-picker"><label>结束时间</label><el-date-picker v-model="customEnd" type="date" format="YYYY-MM-DD" placeholder="选择结束时间" :disabled-date="disableCustomDate" popper-class="history-date-picker-popper" /></div><small class="history-custom-hint">可选：{{ formatPickerDate(farmFirstDate) }} 至 {{ formatPickerDate(farmLastDate) }}<em v-if="invalidCustomRange">结束时间必须晚于开始时间</em></small></div></section>
     <div v-if="loading" class="page-loading">正在读取真实监测数据...</div>
-    <template v-else>
+    <section v-else-if="store.dataError" class="alert-error panel"><span>{{ store.dataError }}</span><button class="secondary-button" @click="store.init(true)">重新加载</button></section>
+     <template v-else>
       <section class="panel page-chart-panel history-chart-panel"><div class="panel-heading"><div><span class="section-kicker">TIME SERIES</span><h2><el-icon><DataLine /></el-icon>{{ selectedFarmOption.shortName }} · {{ selectedMetric.label }}历史趋势</h2></div><span class="data-count">{{ rows.length }} 条监测记录</span></div><RealtimeChart :key="`${selectedFarm}-${metricKey}-${range}-${rows.length}`" :history="rows" :metric-key="metricKey" time-format="datetime" height="300px" /></section>
       <section class="stats-grid"><div class="stat-box"><span>平均值</span><strong>{{ stats.average }} <small>{{ selectedMetric.unit }}</small></strong></div><div class="stat-box"><span>最大值</span><strong>{{ stats.max }} <small>{{ selectedMetric.unit }}</small></strong></div><div class="stat-box"><span>最小值</span><strong>{{ stats.min }} <small>{{ selectedMetric.unit }}</small></strong></div><div class="stat-box"><span>标准差</span><strong>{{ stats.deviation }}</strong></div><div class="stat-box quality-normal"><span>正常次数</span><strong>{{ stats.normal }} <small>次</small></strong></div><div class="stat-box quality-yellow"><span>黄色预警</span><strong>{{ stats.yellow }} <small>次</small></strong></div><div class="stat-box quality-orange"><span>橙色预警</span><strong>{{ stats.orange }} <small>次</small></strong></div><div class="stat-box quality-red"><span>红色预警</span><strong>{{ stats.red }} <small>次</small></strong></div></section>
       <section class="panel table-panel"><div class="panel-heading"><div><span class="section-kicker">DATA RECORDS</span><h2><el-icon><Grid /></el-icon> 历史数据表格</h2></div><span class="simulation-label">真实数据 · 按当前指标阈值判断</span></div><div class="data-table-wrap"><table class="data-table history-data-table"><thead><tr><th>时间</th><th>养殖场</th><th>水温</th><th>pH</th><th>DO</th><th>氨氮</th><th>盐度</th><th>亚硝酸盐</th><th>数据质量</th></tr></thead><tbody><tr v-for="row in pagedRows" :key="row.id"><td>{{ row.time }}</td><td :title="row.farmName">{{ formatFarmName(row.farmName) }}</td><td>{{ formatMetricValue(row, 'temperature') }}</td><td>{{ formatMetricValue(row, 'ph') }}</td><td>{{ formatMetricValue(row, 'dissolvedOxygen') }}</td><td>{{ formatMetricValue(row, 'ammoniaNitrogen') }}</td><td>{{ formatMetricValue(row, 'salinity') }}</td><td>{{ formatMetricValue(row, 'nitrite') }}</td><td><span class="table-status" :class="row.quality === 'normal' ? 'done' : row.quality === 'yellow' ? 'pending' : row.quality === 'orange' ? 'processing' : 'severe'">{{ row.qualityLabel }}</span></td></tr><tr v-if="!pagedRows.length"><td colspan="9" class="table-empty">当前养殖场和时间范围暂无数据</td></tr></tbody></table></div><div class="pagination-row"><span>共 {{ tableRows.length }} 条记录</span><el-pagination v-model:current-page="currentPage" :page-size="pageSize" :total="tableRows.length" layout="prev, pager, next" background /></div></section>

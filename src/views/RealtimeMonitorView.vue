@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { Connection, DataLine, Location, Monitor } from '@element-plus/icons-vue'
+import { Connection, DataLine, Location, Monitor, Refresh, Warning } from '@element-plus/icons-vue'
 import PageShell from '../components/PageShell.vue'
 import MetricCard from '../components/MetricCard.vue'
 import RealtimeChart from '../components/RealtimeChart.vue'
@@ -22,18 +22,25 @@ const current = computed(() => history.value.at(-1) || {})
 const previous = computed(() => history.value.at(-2) || current.value)
 const lastUpdated = computed(() => current.value.time || '--')
 
-onMounted(() => store.init())
+onMounted(async () => {
+  try {
+    await store.init()
+  } catch {
+    // 错误信息由页面状态卡片展示。
+  }
+})
 </script>
 
 <template>
   <PageShell title="实时监测">
+    <section v-if="store.dataError" class="alert-error panel"><Warning /><span>{{ store.dataError }}</span><button class="secondary-button" @click="store.init(true)"><el-icon><Refresh /></el-icon>重新加载</button></section>
     <section class="filter-bar panel">
       <div class="filter-intro"><span class="section-kicker">LIVE MONITORING</span><strong>天津市滨海新区水产养殖监测</strong></div>
       <div class="filter-item"><label>养殖场</label><el-select v-model="selectedFarmId" aria-label="选择养殖场"><el-option v-for="farm in FARM_OPTIONS" :key="farm.id" :label="farm.name" :value="farm.id" /></el-select></div>
       <div class="filter-item"><label>监测时段</label><span class="monitor-period">最近五小时 · 每小时 1 次 · 6 个时间点</span></div>
     </section>
 
-    <section class="page-metrics-grid"><MetricCard v-for="metric in metrics" :key="metric.key" :metric="metric" :value="Number(current[metric.key] || 0)" :previous="Number(previous[metric.key] ?? current[metric.key] ?? 0)" :time="lastUpdated" /></section>
+    <section class="page-metrics-grid"><MetricCard v-for="metric in metrics" :key="metric.key" :metric="metric" :value="current[metric.key]" :previous="previous[metric.key] ?? current[metric.key]" :time="lastUpdated" /></section>
 
     <section class="monitor-layout">
       <section class="panel page-chart-panel">
@@ -45,7 +52,7 @@ onMounted(() => store.init())
       </section>
 
       <aside class="panel live-status-panel">
-        <div class="panel-heading"><div><span class="section-kicker">MONITORING STATUS</span><h2><el-icon><Connection /></el-icon> 监测状态</h2></div><StatusBadge level="normal" text="数据已载入" /></div>
+        <div class="panel-heading"><div><span class="section-kicker">MONITORING STATUS</span><h2><el-icon><Connection /></el-icon> 监测状态</h2></div><StatusBadge :level="store.dataError ? 'red' : 'normal'" :text="store.deviceStatus.network" /></div>
         <div class="status-overview"><div class="status-big-icon"><Monitor /></div><div><strong>最近五小时监测记录</strong><span>{{ selectedFarm.shortName }} · 每小时 1 次 · 6 个时间点</span></div></div>
         <div class="status-list">
           <div><span><Location />数据更新时间</span><strong>{{ lastUpdated }}</strong></div>

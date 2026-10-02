@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { DataLine } from '@element-plus/icons-vue'
+import { DataLine, Refresh, Warning } from '@element-plus/icons-vue'
 import SidebarNav from '../components/SidebarNav.vue'
 import TopStatusBar from '../components/TopStatusBar.vue'
 import MetricCard from '../components/MetricCard.vue'
@@ -21,8 +21,13 @@ const previous = computed(() => series.value.at(-2) || current.value)
 
 onMounted(async () => {
   loading.value = true
-  await store.init()
-  loading.value = false
+  try {
+    await store.init()
+  } catch {
+    // 错误状态由 store.dataError 展示，避免静默空白页。
+  } finally {
+    loading.value = false
+  }
 })
 </script>
 
@@ -32,6 +37,8 @@ onMounted(async () => {
     <main class="main-content">
       <TopStatusBar />
       <div class="dashboard-content" v-loading="loading" element-loading-background="rgba(7, 20, 31, .85)">
+        <section v-if="store.dataError" class="alert-error panel"><Warning /><span>{{ store.dataError }}</span><button class="secondary-button" @click="store.init(true)"><el-icon><Refresh /></el-icon>重新加载</button></section>
+
         <section class="dashboard-farm-bar">
           <div class="dashboard-farm-title">
             <span class="section-kicker">FARM SELECTION</span>
@@ -44,7 +51,7 @@ onMounted(async () => {
         </section>
 
         <section class="metrics-grid">
-          <MetricCard v-for="metric in metrics" :key="metric.key" :metric="metric" :value="Number(current[metric.key] || 0)" :previous="Number(previous[metric.key] || current[metric.key] || 0)" :time="current.time" />
+          <MetricCard v-for="metric in metrics" :key="metric.key" :metric="metric" :value="current[metric.key]" :previous="previous[metric.key] ?? current[metric.key]" :time="current.time" />
         </section>
 
         <section class="panel chart-panel">
@@ -53,7 +60,7 @@ onMounted(async () => {
               <span class="section-kicker">REAL-TIME TREND</span>
               <h2><el-icon><DataLine /></el-icon> 水质趋势</h2>
             </div>
-            <div class="chart-meta"><span class="live-dot"></span>数据源已连接 <span class="time-range">近 90 分钟</span></div>
+            <div class="chart-meta"><span class="live-dot" :class="{ 'error-dot': store.dataError }"></span>{{ store.deviceStatus.network }}<span v-if="store.lastSyncAt" class="time-sync">同步于 {{ store.lastSyncAt }}</span><span class="time-range">近 90 分钟</span></div>
           </div>
           <TrendChart :history="series" />
         </section>

@@ -1,6 +1,6 @@
 <script setup>
 import { RouterLink } from 'vue-router'
-import { Monitor, DataLine, Bell, TrendCharts, SetUp, Connection } from '@element-plus/icons-vue'
+import { Monitor, DataLine, Bell, TrendCharts, SetUp, Setting, Connection } from '@element-plus/icons-vue'
 
 const navItems = [
   { label: '综合监控大屏', path: '/', icon: Monitor },
@@ -9,7 +9,7 @@ const navItems = [
   { label: '智能预警', path: '/alerts', icon: Bell },
   { label: '趋势预测', path: '/prediction', icon: TrendCharts },
   { label: '设备控制', path: '/devices', icon: SetUp },
-  { label: '系统设置', path: '/settings', icon: SetUp },
+  { label: '系统设置', path: '/settings', icon: Setting },
 ]
 </script>
 
