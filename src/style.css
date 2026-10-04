@@ -56,10 +56,9 @@ button { font: inherit; }
   .sidebar.is-open { transform: translateX(0); }
   .mobile-menu-toggle { position: fixed; z-index: 1001; top: 12px; left: 12px; display: grid; width: 40px; height: 40px; place-items: center; border: 1px solid rgba(53, 213, 197, .35); border-radius: 9px; color: #b9f8f2; background: rgba(7, 20, 31, .92); box-shadow: 0 7px 20px rgba(0, 0, 0, .22); cursor: pointer; font-size: 21px; line-height: 1; }
   .mobile-nav-backdrop { position: fixed; z-index: 1000; inset: 0; display: block; border: 0; background: rgba(0, 8, 15, .62); cursor: pointer; }
-  .feature-topbar { min-height: 96px; padding: 19px 16px 16px 66px; }
+  .feature-topbar { min-height: 96px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 19px 14px 16px 66px; }
   .feature-topbar h1 { font-size: 20px; letter-spacing: .5px; }
-  .feature-topbar-right { display: flex; flex-wrap: wrap; gap: 5px 9px; max-width: 48%; font-size: 9px; text-align: right; }
-  .feature-clock { width: 100%; margin-left: 0; padding-left: 0; border-left: 0; }
+  .feature-topbar-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; font-size: 9px; text-align: right; }
   .feature-content { width: 100%; max-width: none; padding: 16px 12px 24px; overflow: hidden; }
   .dashboard-content { width: 100%; max-width: none; padding: 16px 12px 24px; overflow: hidden; }
   .topbar { position: relative; display: grid; grid-template-columns: 1fr auto; gap: 12px; min-height: 116px; padding: 62px 14px 15px 64px; }
@@ -92,6 +91,5 @@ button { font: inherit; }
 @media (max-width: 389px) {
   .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .metric-card, .page-metrics-grid .metric-card { min-height: 136px; }
-  .feature-topbar-right { max-width: 42%; }
   .feature-topbar h1 { font-size: 18px; }
 }
