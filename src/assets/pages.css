@@ -103,3 +103,106 @@
 .brand-subtitle {
   white-space: nowrap;
 }
+
+/* Responsive content layouts: keep desktop visuals, reflow only below 1200px. */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .feature-content { padding-left: 22px; padding-right: 22px; }
+  .feature-topbar { padding-left: 22px; padding-right: 22px; }
+  .filter-intro { min-width: 0; flex: 1 1 100%; }
+  .filter-bar { flex-wrap: wrap; }
+  .page-metrics-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .stats-grid, .alert-stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .prediction-value-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .future-value-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .device-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .history-filter .filter-item:first-of-type .el-select { width: 240px; }
+}
+
+@media (max-width: 767px) {
+  .feature-content { padding: 16px 12px 28px; overflow: hidden; }
+  .feature-topbar { min-height: 96px; padding: 19px 16px 16px 66px; }
+  .feature-topbar h1 { font-size: 20px; }
+  .feature-topbar-right { display: flex; max-width: 48%; flex-wrap: wrap; justify-content: flex-end; gap: 4px 8px; font-size: 9px; text-align: right; }
+  .feature-clock { width: 100%; margin-left: 0; padding-left: 0; border-left: 0; }
+
+  .filter-bar { align-items: stretch; flex-direction: column; gap: 10px; min-height: 0; padding: 13px 12px; }
+  .filter-intro { width: 100%; min-width: 0; margin-right: 0; }
+  .filter-item { width: 100%; align-items: center; justify-content: space-between; gap: 8px; }
+  .filter-item label { flex: 0 0 auto; }
+  .filter-bar .el-select, .filter-bar .el-date-editor, .history-filter .filter-item:first-of-type .el-select, .history-filter .filter-item .el-select { width: 100%; min-width: 0; }
+  .monitor-period { flex: 1; min-width: 0; white-space: normal; line-height: 1.5; }
+  .history-custom-range { width: 100%; align-items: stretch; flex-direction: column; gap: 8px; }
+  .history-custom-picker { width: 100%; }
+  .history-custom-picker .el-date-editor { width: 100%; }
+  .history-range-separator { display: none; }
+  .history-custom-hint { width: 100%; }
+  .page-metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .page-metrics-grid .metric-card { min-width: 0; min-height: 148px; padding: 13px 12px 11px; }
+  .monitor-layout { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .page-chart-panel, .live-status-panel { min-width: 0; padding: 14px 12px 10px; }
+  .chart-select { width: 100%; justify-content: space-between; }
+  .chart-select .el-select { width: min(58vw, 150px); }
+  .realtime-chart { max-width: 100%; }
+
+  .stats-grid, .alert-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .stat-box, .alert-stat-card { min-width: 0; padding: 12px; }
+  .alert-stat-card { gap: 8px; }
+  .alert-stat-icon { width: 29px; height: 29px; flex: 0 0 29px; font-size: 14px; }
+  .alert-stat-card strong { font-size: 18px; }
+  .alert-page-head, .device-page-head, .settings-head { align-items: stretch; flex-direction: column; gap: 12px; }
+  .alert-page-actions, .settings-actions { width: 100%; flex-wrap: wrap; }
+  .alert-page-actions .farm-filter { flex: 1 1 100%; }
+  .farm-filter .el-select { width: 100%; }
+  .settings-actions > button { flex: 1 1 0; min-height: 40px; justify-content: center; }
+  .alert-filter-tools { align-items: stretch; flex-wrap: wrap; }
+  .alert-filter-tools .el-select { flex: 1 1 120px; min-width: 0; }
+  .alert-clear-filter { min-height: 34px; }
+  .alert-detail-grid { grid-template-columns: 1fr; }
+
+  .prediction-notice { align-items: flex-start; padding: 12px; }
+  .prediction-notice .simulation-label { display: none; }
+  .prediction-toolbar { align-items: stretch; flex-direction: column; gap: 10px; padding: 13px 12px; }
+  .inline-filter { width: 100%; margin-left: 0; }
+  .inline-filter .el-select { width: 100%; }
+  .prediction-meta-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .prediction-meta-grid > div { min-width: 0; padding: 12px; }
+  .prediction-meta-grid strong { overflow-wrap: anywhere; font-size: 11px; }
+  .future-value-grid, .prediction-value-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .future-value-card, .prediction-value-card { min-width: 0; padding: 13px 11px; }
+  .future-card-heading { align-items: flex-start; flex-direction: column; }
+  .prediction-card-badges { align-items: flex-start; }
+  .future-prediction-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .future-prediction-card { min-width: 0; padding: 11px 10px 6px; }
+  .future-prediction-chart { height: 220px; }
+  .prediction-chart-panel { padding: 14px 12px 10px; }
+  .prediction-chart { height: 270px; }
+
+  .device-page-head .device-summary { flex-wrap: wrap; gap: 8px 16px; }
+  .device-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .device-control-card { min-width: 0; padding: 14px; }
+  .device-card-top { min-width: 0; }
+  .device-card-info { min-width: 0; }
+  .device-card-info p, .device-card-info strong { overflow-wrap: anywhere; }
+  .device-log-list { max-width: 100%; overflow-x: auto; }
+  .device-log-row { min-width: 410px; }
+  .hysteresis-note { align-items: flex-start; }
+
+  .settings-layout { grid-template-columns: minmax(0, 1fr); }
+  .settings-panel, .culture-panel, .saved-threshold-panel { min-width: 0; padding: 14px 12px; }
+  .threshold-help { align-items: flex-start; flex-direction: column; }
+  .normal-threshold-fields, .warning-boundary-fields { grid-template-columns: minmax(0, 1fr); }
+  .warning-direction-grid { grid-template-columns: minmax(0, 1fr); }
+  .saved-threshold-grid { grid-template-columns: minmax(0, 1fr); }
+  .saved-profile-head { align-items: flex-start; flex-direction: column; }
+  .profile-apply-button { width: 100%; min-height: 36px; }
+
+  .data-table-wrap, .alert-table-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+  .history-data-table { min-width: 820px; }
+  .alert-data-table { min-width: 1280px; }
+}
+
+@media (max-width: 389px) {
+  .future-value-grid, .prediction-value-grid, .prediction-meta-grid { grid-template-columns: minmax(0, 1fr); }
+  .stats-grid, .alert-stats-grid { grid-template-columns: minmax(0, 1fr); }
+  .feature-topbar h1 { font-size: 18px; }
+}

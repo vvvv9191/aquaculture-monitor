@@ -6,6 +6,7 @@ import { getMetricConfig } from '../config/waterQualityConfig'
 const props = defineProps({ history: { type: Array, default: () => [] }, metricKey: { type: String, default: 'dissolvedOxygen' }, height: { type: String, default: '280px' }, timeFormat: { type: String, default: 'time' } })
 const chartRef = ref(null)
 let chart
+let resizeObserver
 
 function toTimestamp(point) {
   const timestamp = new Date(point?.time || '').getTime()
@@ -52,7 +53,11 @@ function formatMetricValue(value, metric) {
 }
 
 function renderChart() {
-  if (!chartRef.value || !props.history.length) return
+  if (!chartRef.value) return
+  if (!props.history.length) {
+    chart?.clear()
+    return
+  }
   chart ||= echarts.init(chartRef.value)
   const metric = getMetricConfig(props.metricKey)
   const axisLabels = buildAxisLabels()
@@ -87,7 +92,19 @@ function renderChart() {
 }
 function resize() { chart?.resize() }
 watch(() => [props.history, props.metricKey, props.timeFormat], () => nextTick(renderChart), { deep: true })
-onMounted(() => { nextTick(renderChart); window.addEventListener('resize', resize) })
-onBeforeUnmount(() => { window.removeEventListener('resize', resize); chart?.dispose() })
+onMounted(() => {
+  nextTick(renderChart)
+  window.addEventListener('resize', resize)
+  if (typeof ResizeObserver !== 'undefined' && chartRef.value) {
+    resizeObserver = new ResizeObserver(resize)
+    resizeObserver.observe(chartRef.value)
+  }
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', resize)
+  resizeObserver?.disconnect()
+  chart?.dispose()
+  chart = null
+})
 </script>
 <template><div ref="chartRef" class="realtime-chart" :style="{ height }"></div></template>

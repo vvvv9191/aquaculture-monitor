@@ -6,6 +6,7 @@ import { WATER_QUALITY_METRICS } from '../config/waterQuality'
 const props = defineProps({ history: { type: Array, default: () => [] } })
 const chartRef = ref(null)
 let chart
+let resizeObserver
 
 // 首页趋势图仅展示温度 / 酸碱度 / 溶解氧三项核心指标。
 const seriesConfig = ['temperature', 'ph', 'dissolvedOxygen']
@@ -23,8 +24,16 @@ const axisLayout = [
 ]
 
 function renderChart() {
-  if (!chartRef.value || !props.history.length) return
+  if (!chartRef.value) return
+  if (!props.history.length) {
+    chart?.clear()
+    return
+  }
   chart ||= echarts.init(chartRef.value)
+  const compact = chartRef.value.clientWidth < 520
+  const currentAxisLayout = compact
+    ? [{ position: 'left', offset: 0 }, { position: 'left', offset: 32 }, { position: 'right', offset: 0 }]
+    : axisLayout
   chart.setOption({
     animationDuration: 500,
     color: seriesConfig.map((key) => metricOf(key).color),
@@ -41,19 +50,19 @@ function renderChart() {
         return [params[0]?.axisValue, ...lines].join('<br/>')
       },
     },
-    legend: { top: 2, left: 'center', itemWidth: 14, itemHeight: 8, itemGap: 20, textStyle: { color: '#9dbdca', fontSize: 12 }, data: seriesConfig.map(seriesName) },
-    grid: { top: 60, right: 96, bottom: 32, left: 68, containLabel: false },
+    legend: { type: compact ? 'scroll' : 'plain', top: 2, left: 'center', itemWidth: 14, itemHeight: 8, itemGap: compact ? 8 : 20, textStyle: { color: '#9dbdca', fontSize: compact ? 9 : 12 }, data: seriesConfig.map(seriesName) },
+    grid: { top: compact ? 42 : 60, right: compact ? 48 : 96, bottom: compact ? 38 : 32, left: compact ? 44 : 68, containLabel: false },
     xAxis: {
       type: 'category',
       boundaryGap: false,
       data: props.history.map((point) => point.time.slice(11, 16)),
       axisLine: { lineStyle: { color: '#294759' } },
-      axisLabel: { color: '#718d9f', fontSize: 10, margin: 12 },
+      axisLabel: { color: '#718d9f', fontSize: compact ? 8 : 10, margin: compact ? 6 : 12 },
       axisTick: { show: false },
     },
     yAxis: seriesConfig.map((key, index) => {
       const metric = metricOf(key)
-      const layout = axisLayout[index]
+      const layout = currentAxisLayout[index]
       return {
         type: 'value',
         scale: true,
@@ -62,8 +71,8 @@ function renderChart() {
         offset: layout.offset,
         name: seriesName(key),
         nameGap: 12,
-        nameTextStyle: { color: metric.color, fontSize: 10 },
-        axisLabel: { color: metric.color, fontSize: 10 },
+        nameTextStyle: { color: metric.color, fontSize: compact ? 8 : 10 },
+        axisLabel: { color: metric.color, fontSize: compact ? 8 : 10 },
         axisLine: { show: index > 0, lineStyle: { color: metric.color } },
         axisTick: { show: false },
         splitLine: { show: index === 0, lineStyle: { color: '#1b3544', type: 'dashed' } },
@@ -83,8 +92,20 @@ function renderChart() {
 }
 function resize() { chart?.resize() }
 watch(() => props.history, () => nextTick(renderChart), { deep: true })
-onMounted(() => { nextTick(renderChart); window.addEventListener('resize', resize) })
-onBeforeUnmount(() => { window.removeEventListener('resize', resize); chart?.dispose() })
+onMounted(() => {
+  nextTick(renderChart)
+  window.addEventListener('resize', resize)
+  if (typeof ResizeObserver !== 'undefined' && chartRef.value) {
+    resizeObserver = new ResizeObserver(resize)
+    resizeObserver.observe(chartRef.value)
+  }
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', resize)
+  resizeObserver?.disconnect()
+  chart?.dispose()
+  chart = null
+})
 </script>
 
 <template><div ref="chartRef" class="trend-chart"></div></template>

@@ -4,8 +4,13 @@ import * as echarts from 'echarts'
 const props = defineProps({ history: { type: Array, default: () => [] }, prediction: { type: Object, default: null } })
 const chartRef = ref(null)
 let chart
+let resizeObserver
 function renderChart() {
-  if (!chartRef.value || !props.prediction) return
+  if (!chartRef.value) return
+  if (!props.prediction) {
+    chart?.clear()
+    return
+  }
   chart ||= echarts.init(chartRef.value)
   const history = props.history.slice(-18)
   const pastLabels = history.map((point) => point.time.slice(11, 16))
@@ -15,7 +20,19 @@ function renderChart() {
 }
 function resize() { chart?.resize() }
 watch(() => [props.history, props.prediction], () => nextTick(renderChart), { deep: true })
-onMounted(() => { nextTick(renderChart); window.addEventListener('resize', resize) })
-onBeforeUnmount(() => { window.removeEventListener('resize', resize); chart?.dispose() })
+onMounted(() => {
+  nextTick(renderChart)
+  window.addEventListener('resize', resize)
+  if (typeof ResizeObserver !== 'undefined' && chartRef.value) {
+    resizeObserver = new ResizeObserver(resize)
+    resizeObserver.observe(chartRef.value)
+  }
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', resize)
+  resizeObserver?.disconnect()
+  chart?.dispose()
+  chart = null
+})
 </script>
 <template><div ref="chartRef" class="prediction-chart"></div></template>

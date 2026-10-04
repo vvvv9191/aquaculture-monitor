@@ -13,14 +13,20 @@ const props = defineProps({
 
 const chartRef = ref(null)
 let chart
+let resizeObserver
 
 function formatTime(value) {
   return String(value || '').slice(5, 16).replace(' ', '\n')
 }
 
 function renderChart() {
-  if (!chartRef.value || !props.points.length) return
+  if (!chartRef.value) return
+  if (!props.points.length) {
+    chart?.clear()
+    return
+  }
   chart ||= echarts.init(chartRef.value)
+  const compact = chartRef.value.clientWidth < 420
   chart.setOption({
     color: [props.metric.color],
     tooltip: {
@@ -40,12 +46,12 @@ function renderChart() {
         return `${raw.time}<br/>${props.metric.label}：${Number(value).toFixed(props.metric.decimals)} ${props.metric.unit}<br/>风险：<span style=\"color:${levelInfo.color}\">${levelInfo.label} · ${directionLabel}</span><br/>模型：${props.modelType}`
       },
     },
-    grid: { top: 18, right: 16, bottom: 45, left: 48 },
+    grid: { top: 18, right: 12, bottom: compact ? 42 : 45, left: compact ? 40 : 48 },
     xAxis: {
       type: 'category',
       data: props.points.map((point) => formatTime(point.time)),
       axisLine: { lineStyle: { color: '#294759' } },
-      axisLabel: { color: '#718d9f', fontSize: 9, lineHeight: 14 },
+      axisLabel: { color: '#718d9f', fontSize: compact ? 8 : 9, lineHeight: 14, hideOverlap: true },
     },
     yAxis: {
       type: 'value',
@@ -72,8 +78,20 @@ function resize() {
 }
 
 watch(() => [props.points, props.metric, props.settings, props.modelType], () => nextTick(renderChart), { deep: true })
-onMounted(() => { nextTick(renderChart); window.addEventListener('resize', resize) })
-onBeforeUnmount(() => { window.removeEventListener('resize', resize); chart?.dispose() })
+onMounted(() => {
+  nextTick(renderChart)
+  window.addEventListener('resize', resize)
+  if (typeof ResizeObserver !== 'undefined' && chartRef.value) {
+    resizeObserver = new ResizeObserver(resize)
+    resizeObserver.observe(chartRef.value)
+  }
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', resize)
+  resizeObserver?.disconnect()
+  chart?.dispose()
+  chart = null
+})
 </script>
 
 <template>
